@@ -1,0 +1,1211 @@
+<html><head><base href=".">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WebDoc Editor - Editor de Contenido Web</title>
+
+<!-- Incluyo CDNs necesarios -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.0-rc.2/dist/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.0-rc.2/dist/quill.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<!-- Add PrismJS CSS for syntax highlighting -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
+<!-- Add more syntax highlighting themes -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/inline-color/prism-inline-color.min.css" rel="stylesheet" />
+
+<style>
+:root {
+  --primary-color: #2196F3;
+  --secondary-color: #FFC107;
+  --dark-color: #333;
+  --light-color: #f4f4f4;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  background: var(--light-color);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar {
+  background: var(--dark-color);
+  padding: 1rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  color: var(--secondary-color) !important;
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.navbar-brand img {
+  height: 40px;
+  width: auto;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+.nav-link {
+  color: white !important;
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+  color: var(--secondary-color) !important;
+}
+
+.editor-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  margin: 20px auto;
+  max-width: 1200px;
+}
+
+.ql-toolbar {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  background: #f8f9fa;
+}
+
+#editor {
+  height: 500px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.implementation-guide {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.footer {
+  background: var(--dark-color);
+  color: white;
+  padding: 2rem 0;
+  margin-top: auto;
+}
+
+.footer .accordion-button {
+  background: var(--dark-color);
+  color: white;
+  border: none;
+  padding: 1rem;
+  transition: all 0.3s ease;
+}
+
+.footer .accordion-button:not(.collapsed) {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.footer .accordion-button:hover {
+  color: var(--secondary-color);
+}
+
+.footer .accordion-body {
+  background: white;
+  color: var(--dark-color);
+  border-radius: 0 0 8px 8px;
+}
+
+.footer .accordion {
+  border: none;
+  margin-bottom: 1rem;
+}
+
+.footer .accordion-item {
+  border: none;
+  margin-bottom: 0.5rem;
+}
+
+.footer .accordion-header {
+  border-radius: 8px;
+}
+
+.footer pre {
+  background: #2d2d2d !important;
+  border: 1px solid #404040;
+  margin: 1rem 0;
+}
+
+.footer code {
+  font-family: Monaco, Consolas, monospace;
+}
+
+.footer h4 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.footer p {
+  margin-bottom: 0.5rem;
+}
+
+.hosting-guide {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 15px 0;
+}
+
+.hosting-guide h4 {
+  color: var(--primary-color);
+}
+
+pre {
+  background: #2d2d2d !important;
+  color: #ccc;
+  padding: 1em;
+  margin: .5em 0;
+  overflow: auto;
+  border-radius: 0.3em;
+}
+
+pre.command-line {
+  background: #1e1e1e !important;
+  color: #dcdcdc;
+}
+
+.command-line-prompt {
+  border-right: 1px solid #404040;
+  margin-right: 1em;
+  user-select: none;
+}
+
+pre[class*="language-"] {
+  background: #2d2d2d !important;
+  color: #ccc;
+  padding: 1em;
+  margin: .5em 0;
+  overflow: auto;
+  border-radius: 0.3em;
+}
+
+.token.comment {
+  color: #7C7C7C;
+}
+
+.token.function {
+  color: #82AAFF;
+}
+
+.token.keyword {
+  color: #C792EA;
+}
+
+.token.string {
+  color: #C3E88D;
+}
+
+.token.number {
+  color: #F78C6C;
+}
+
+.token.class-name {
+  color: #FFCB6B;
+}
+
+.token.operator {
+  color: #89DDFF;
+}
+
+.line-numbers .line-numbers-rows {
+  border-right: 1px solid #404040;
+  background: #2d2d2d;
+}
+
+.line-numbers .line-numbers-rows > span {
+  padding-right: 1em;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .editor-container {
+    margin: 10px;
+  }
+  
+  #editor {
+    height: 300px;
+  }
+  .navbar-brand img {
+    height: 30px;
+  }
+  
+  .navbar-brand {
+    font-size: 1.2rem;
+  }
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: var(--dark-color);
+  color: white;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -60px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+.implementation-steps {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 5px;
+}
+
+.implementation-steps h6 {
+  color: var(--primary-color);
+  margin-bottom: 15px;
+}
+
+.implementation-steps ol {
+  padding-left: 20px;
+}
+
+.implementation-steps li {
+  margin-bottom: 15px;
+}
+
+.implementation-steps pre {
+  margin: 10px 0;
+  background: #fff;
+  border: 1px solid #dee2e6;
+}
+
+.accordion {
+  margin-bottom: 2rem;
+}
+
+.accordion-button {
+  background-color: var(--dark-color);
+  color: white;
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.accordion-button:focus {
+  box-shadow: none;
+  border-color: rgba(0,0,0,.125);
+}
+
+.accordion-body {
+  background-color: white;
+  padding: 1.5rem;
+}
+
+.accordion-body pre {
+  margin: 1rem 0;
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 4px;
+}
+
+.footer {
+  padding-bottom: 3rem;
+}
+
+/* Enhanced responsiveness for mobile */
+@media (max-width: 768px) {
+  .accordion-button {
+    font-size: 0.9rem;
+    padding: 0.75rem;
+  }
+  
+  .accordion-body {
+    padding: 1rem;
+  }
+  
+  .accordion-body pre {
+    font-size: 0.8rem;
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  pre[class*="language-"] {
+    font-size: 0.8em;
+    padding: 0.75em;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer .accordion-button {
+    font-size: 0.9rem;
+    padding: 0.75rem;
+  }
+  
+  .footer pre {
+    font-size: 0.8rem;
+    padding: 0.75rem;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- Added Bootstrap JS before the navigation to fix modal issues -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<nav class="navbar navbar-expand-lg navbar-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="https://example.com">
+      <img src="https://i.imgur.com/MYvfVzQ.png" alt="Grupo Sisu Logo">
+      Grupo Sisu Mx (editor web)
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <button class="nav-link btn" data-bs-toggle="modal" data-bs-target="#pythonModal" data-lang-key="pythonIntegration">Integración Python</button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link btn" data-bs-toggle="modal" data-bs-target="#reactModal" data-lang-key="reactIntegration">Integración React</button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link btn" data-bs-toggle="modal" data-bs-target="#vueModal" data-lang-key="vueIntegration">Integración Vue</button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link btn" data-bs-toggle="modal" data-bs-target="#angularModal" data-lang-key="angularIntegration">Integración Angular</button>
+        </li>
+      </ul>
+      <div class="d-flex me-3">
+        <select class="form-select" id="languageSelector">
+          <option value="es">Español</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+      <div class="d-flex">
+        <button class="btn btn-outline-light me-2" onclick="saveDocument()" data-lang-key="save">Guardar</button>
+        <button class="btn btn-warning" onclick="exportDocument()" data-lang-key="export">Exportar</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="editor-container">
+    <div id="editor"></div>
+  </div>
+</div>
+
+<!-- Modales para guías de implementación -->
+<div class="modal fade" id="pythonModal" tabindex="-1" aria-labelledby="pythonModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="pythonModalLabel" data-lang-key="pythonIntegration">Integración Python</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <pre class="line-numbers"><code class="language-python">
+# Flask Implementation
+from flask import Flask, render_template
+
+app = Flask(__name__)
+
+@app.route('/editor')
+def editor():
+    return render_template('editor.html')
+
+# Django Implementation
+# views.py
+from django.shortcuts import render
+
+def editor(request):
+    return render_template('editor.html')
+
+# FastAPI Implementation
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+
+app = FastAPI()
+
+@app.get("/editor")
+async def editor():
+    return HTMLResponse(content=editor_html)
+        </code></pre>
+        <pre class="line-numbers"><code class="language-python">
+# Configuration file (config.py)
+EDITOR_CONFIG = {
+    'STATIC_DIR': '/path/to/your/static/files',  # Replace with your static files path
+    'TEMPLATES_DIR': '/path/to/templates',        # Replace with your templates path
+    'ALLOWED_HOSTS': ['yourdomain.com'],         # Replace with your domain
+    'DEBUG': False                               # Set to True for development
+}
+
+# URL configuration (urls.py)
+urlpatterns = [
+    path('editor/', views.editor, name='editor'),
+    path('YOUR_CUSTOM_PATH/', views.editor),      # Replace with your desired URL path
+]
+
+# Template setup (templates/YOUR_TEMPLATE.html)   
+{% extends "base.html" %}  
+{% block content %}
+    <div id="editor"></div>                      
+    <!-- Add your custom styling/scripts here -->
+{% endblock %}
+</code></pre>
+        <div class="implementation-steps">
+          <div class="alert alert-info" role="alert">
+            <i class="bi bi-info-circle"></i>
+            Click each section to expand detailed implementation instructions
+          </div>
+          <div class="accordion" id="implementationAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#installationSteps" data-lang-key="installationTitle">Instalación</button>
+              </h2>
+              <div id="installationSteps" class="accordion-collapse collapse show">
+                <div class="accordion-body">
+                  <pre class="line-numbers"><code>pip install flask django fastapi quill</code></pre>
+                </div>
+              </div>
+            </div>
+            
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#configurationSteps" data-lang-key="configurationTitle">Configuración</button>
+              </h2>
+              <div id="configurationSteps" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  <pre class="line-numbers"><code>
+# Static files structure
+static/
+  css/
+    quill.snow.css
+  js/
+    quill.min.js</code></pre>
+                </div>
+              </div>
+            </div>
+            
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#implementationSteps" data-lang-key="implementationTitle">Implementación</button>
+              </h2>
+              <div id="implementationSteps" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  <pre class="line-numbers"><code>
+<script>
+  const quill = new Quill('#editor', {
+    theme: 'snow',
+    modules: {
+      toolbar: [ /* toolbar options */ ]
+    }
+  });
+</script></code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="reactModal" tabindex="-1" aria-labelledby="reactModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="reactModalLabel" data-lang-key="reactIntegration">Integración React</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <pre class="line-numbers"><code class="language-jsx">
+// React Component
+const Editor = () => {
+  const editorRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (editorRef.current) {
+      const quill = new Quill(editorRef.current, {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline'],
+            ['image', 'code-block']
+          ]
+        }
+      });
+    }
+  }, []);
+
+  return React.createElement('div', { ref: editorRef });
+}
+
+// Example usage:
+const App = () => {
+  return React.createElement(Editor);
+}
+        </code></pre>
+        <pre class="line-numbers"><code class="language-jsx">
+// Config file (editor.config.js)
+export const editorConfig = {
+  apiEndpoint: 'YOUR_API_ENDPOINT',      // Replace with your API endpoint
+  assetsPath: '/path/to/assets',         // Replace with your assets path
+  theme: 'YOUR_CUSTOM_THEME',            // Optional: Replace with custom theme
+  
+  // Add your custom toolbar options
+  toolbarOptions: [
+    ['bold', 'italic'],
+    ['link', 'image'],
+    // Add more options...
+  ]
+}
+
+// Custom component configuration
+const CustomEditor = () => {
+  return (
+    <div className="YOUR_CUSTOM_CLASS">   
+      <Editor 
+        config={editorConfig}
+        onChange={YOUR_HANDLER_FUNCTION}   
+        initialValue={YOUR_INITIAL_DATA}   
+      />
+    </div>
+  );
+}
+</code></pre>
+        <div class="implementation-steps">
+          <div class="alert alert-info" role="alert">
+            <i class="bi bi-info-circle"></i>
+            Click each section to expand detailed implementation instructions
+          </div>
+          <div class="accordion" id="implementationAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#installationSteps" data-lang-key="installationTitle">Instalación</button>
+              </h2>
+              <div id="installationSteps" class="accordion-collapse collapse show">
+                <div class="accordion-body">
+                  <pre class="line-numbers"><code>npm install quill react-quill</code></pre>
+                </div>
+              </div>
+            </div>
+            
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#configurationSteps" data-lang-key="configurationTitle">Configuración</button>
+              </h2>
+              <div id="configurationSteps" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  <pre class="line-numbers"><code>import 'react-quill/dist/quill.snow.css';</code></pre>
+                </div>
+              </div>
+            </div>
+            
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#implementationSteps" data-lang-key="implementationTitle">Implementación</button>
+              </h2>
+              <div id="implementationSteps" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  <pre class="line-numbers"><code>
+// App.js or your component file
+import Editor from './Editor';
+
+function App() {
+  return (
+    &lt;div className="app"&gt;
+      &lt;Editor /&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Added Vue Modal -->
+<div class="modal fade" id="vueModal" tabindex="-1" aria-labelledby="vueModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="vueModalLabel" data-lang-key="vueIntegration">Integración Vue</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <pre class="line-numbers"><code class="language-javascript">
+// Vue Component
+const Editor = {
+  name: 'Editor',
+  template: '&lt;div ref="editor"&gt;&lt;/div&gt;',
+  mounted() {
+    const quill = new Quill(this.$refs.editor, {
+      theme: 'snow',
+      modules: {
+        toolbar: [
+          [{ 'header': [1, 2, 3, false] }],
+          ['bold', 'italic', 'underline'],
+          ['image', 'code-block']
+        ]
+      }
+    })
+  }
+}
+
+// Example usage:
+const app = Vue.createApp({
+  components: { Editor }
+})
+        </code></pre>
+        <pre class="line-numbers"><code class="language-javascript">
+// Vue configuration (editor.config.js)
+export default {
+  name: 'YOUR_COMPONENT_NAME',        
+  data() {
+    return {
+      editorConfig: {
+        placeholder: 'YOUR_PLACEHOLDER',  
+        theme: 'YOUR_THEME',             
+        modules: {
+          toolbar: YOUR_TOOLBAR_CONFIG    
+        }
+      }
+    }
+  },
+  
+  methods: {
+    onEditorChange(event) {
+      // YOUR CUSTOM LOGIC HERE        
+    }
+  }
+}
+
+// Template usage (YOUR_TEMPLATE.vue)   
+<template>
+  <div class="YOUR_WRAPPER_CLASS">      
+    <editor-component
+      :config="editorConfig"
+      @change="onEditorChange"
+    />
+  </div>
+</template>
+</code></pre>
+        <div class="implementation-steps">
+          <div class="alert alert-info" role="alert">
+            <i class="bi bi-info-circle"></i>
+            Click each section to expand detailed implementation instructions
+          </div>
+          <div class="accordion" id="implementationAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#installationSteps" data-lang-key="installationTitle">Instalación</button>
+              </h2>
+              <div id="installationSteps" class="accordion-collapse collapse show">
+                <div class="accordion-body">
+                  <pre class="line-numbers"><code>npm install quill @vueup/vue-quill</code></pre>
+                </div>
+              </div>
+            </div>
+            
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#configurationSteps" data-lang-key="configurationTitle">Configuración</button>
+              </h2>
+              <div id="configurationSteps" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  <pre class="line-numbers"><code>
+// main.js
+import { QuillEditor } from '@vueup/vue-quill'
+import '@vueup/vue-quill/dist/vue-quill.snow.css'
+
+app.component('QuillEditor', QuillEditor)</code></pre>
+                </div>
+              </div>
+            </div>
+            
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#implementationSteps" data-lang-key="implementationTitle">Implementación</button>
+              </h2>
+              <div id="implementationSteps" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  <pre class="line-numbers"><code>
+&lt;template&gt;
+  &lt;QuillEditor v-model:content="content" 
+               toolbar="full"
+               theme="snow" /&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+const Editor = {
+  data() {
+    return {
+      content: ''
+    }
+  }
+}
+&lt;/script&gt;</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Added Angular Modal -->
+<div class="modal fade" id="angularModal" tabindex="-1" aria-labelledby="angularModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="angularModalLabel" data-lang-key="angularIntegration">Integración Angular</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <pre class="line-numbers"><code class="language-javascript">
+// Angular Component
+var EditorComponent = {
+  template: `<div #editor></div>`,
+  controller: function() {
+    this.editorElement = null;
+    
+    this.$postLink = function() {
+      const quill = new Quill(this.editorElement, {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline'],
+            ['image', 'code-block']
+          ]
+        }
+      });
+    };
+  }
+};
+
+// In your module:
+var EditorModule = {
+  declarations: [EditorComponent]
+};
+        </code></pre>
+        <pre class="line-numbers"><code class="language-typescript">
+// Editor configuration (editor.config.ts)
+export const EDITOR_CONFIG = {
+  apiUrl: 'YOUR_API_URL',               
+  uploadPath: 'YOUR_UPLOAD_PATH',       
+  
+  // Add your custom configuration
+  editorOptions: {
+    theme: 'YOUR_THEME_NAME',           
+    placeholder: 'YOUR_PLACEHOLDER',     
+    modules: {
+      // YOUR CUSTOM MODULES             
+    }
+  }
+};
+
+// Component setup (editor.component.ts)
+@Component({
+  selector: 'YOUR-COMPONENT-SELECTOR',   
+  template: `
+    <div class="YOUR_CONTAINER_CLASS">   
+      <quill-editor
+        [modules]="modules"
+        [placeholder]="placeholder"
+        (onContentChanged)="YOUR_CHANGE_HANDLER($event)"  
+      ></quill-editor>
+    </div>
+  `
+})
+</code></pre>
+        <div class="implementation-steps">
+          <div class="alert alert-info" role="alert">
+            <i class="bi bi-info-circle"></i>
+            Click each section to expand detailed implementation instructions
+          </div>
+          <div class="accordion" id="implementationAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#installationSteps" data-lang-key="installationTitle">Instalación</button>
+              </h2>
+              <div id="installationSteps" class="accordion-collapse collapse show">
+                <div class="accordion-body">
+                  <pre class="line-numbers"><code>npm install quill ngx-quill</code></pre>
+                </div>
+              </div>
+            </div>
+            
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#configurationSteps" data-lang-key="configurationTitle">Configuración</button>
+              </h2>
+              <div id="configurationSteps" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  <pre class="line-numbers"><code>
+import { QuillModule } from 'ngx-quill'
+
+@NgModule({
+  imports: [
+    QuillModule.forRoot()
+  ]
+})</code></pre>
+                </div>
+              </div>
+            </div>
+            
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#implementationSteps" data-lang-key="implementationTitle">Implementación</button>
+              </h2>
+              <div id="implementationSteps" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  <pre class="line-numbers"><code>
+&lt;quill-editor [(ngModel)]="content"
+              [styles]="{height: '250px'}"
+              [modules]="quillConfig"&gt;
+&lt;/quill-editor&gt;</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer mt-5">
+  <div class="container">
+    <div class="accordion" id="hostingAccordion">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#netlifyGuide" data-lang-key="netlifyDeployment">Guía de Despliegue en Netlify</button>
+        </h2>
+        <div id="netlifyGuide" class="accordion-collapse collapse show" data-bs-parent="#hostingAccordion">
+          <div class="accordion-body">
+            <h4>Guía de Despliegue en Netlify</h4>
+            <pre class="line-numbers"><code>
+# netlify.toml
+[build]
+  publish = "dist"
+  command = "npm run build"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+            </code></pre>
+            <p>1. Connect your GitHub repository to Netlify</p>
+            <p>2. Configure build settings as shown above</p>
+            <p>3. Deploy your site</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#customDomainGuide" data-lang-key="customDomain">Configuración de Dominio Personalizado</button>
+        </h2>
+        <div id="customDomainGuide" class="accordion-collapse collapse" data-bs-parent="#hostingAccordion">
+          <div class="accordion-body">
+            <h4>Configuración de Dominio Personalizado</h4>
+            <pre class="line-numbers"><code>
+# DNS Configuration
+Type    Name    Value
+A       @       76.76.21.21
+CNAME   www     yourdomain.netlify.app
+            </code></pre>
+            <pre class="line-numbers"><code class="language-bash">
+# Domain configuration example
+# Replace values with your actual configuration
+
+# Netlify DNS configuration
+Type     Name              Value
+A        @                 YOUR_NETLIFY_IP          
+CNAME    www              YOUR_NETLIFY_SITE.app    
+
+# Custom domain setup in your hosting dashboard
+DOMAIN_NAME=YOUR_DOMAIN.com              
+SSL_TYPE=lets-encrypt                    
+FORCE_SSL=true                          
+
+# Example nginx configuration if using custom server
+server {
+    listen 80;
+    server_name YOUR_DOMAIN.com;         
+    root /path/to/your/files;           
+    
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+</code></pre>
+            <p>1. Purchase domain from your preferred registrar</p>
+            <p>2. Add DNS records as shown above</p>
+            <p>3. Configure SSL certificate in hosting dashboard</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#vercelGuide" data-lang-key="vercelDeployment">Despliegue en Vercel</button>
+        </h2>
+        <div id="vercelGuide" class="accordion-collapse collapse" data-bs-parent="#hostingAccordion">
+          <div class="accordion-body">
+            <h4>Despliegue en Vercel</h4>
+            <pre class="line-numbers"><code>
+# vercel.json
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build"
+    }
+  ]
+}
+            </code></pre>
+            <p>1. Install Vercel CLI: npm i -g vercel</p>
+            <p>2. Run: vercel login</p>
+            <p>3. Deploy: vercel</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#githubPagesGuide" data-lang-key="githubPages">Despliegue en GitHub Pages</button>
+        </h2>
+        <div id="githubPagesGuide" class="accordion-collapse collapse" data-bs-parent="#hostingAccordion">
+          <div class="accordion-body">
+            <h4>Despliegue en GitHub Pages</h4>
+            <pre class="line-numbers"><code>
+# Deploy script in package.json
+{
+  "scripts": {
+    "deploy": "gh-pages -d dist"
+  }
+}
+            </code></pre>
+            <p>1. Install gh-pages: npm i gh-pages</p>
+            <p>2. Configure repository settings</p>
+            <p>3. Run: npm run deploy</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-jsx.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-inline-color.min.js"></script>
+
+<script>
+// Language translations
+const translations = {
+  es: {
+    pythonIntegration: "Integración Python",
+    reactIntegration: "Integración React", 
+    vueIntegration: "Integración Vue",
+    angularIntegration: "Integración Angular",
+    save: "Guardar",
+    export: "Exportar",
+    savedSuccess: "¡Documento guardado exitosamente!",
+    netlifyDeployment: "Guía de Despliegue en Netlify",
+    customDomain: "Configuración de Dominio Personalizado",
+    vercelDeployment: "Despliegue en Vercel",
+    githubPages: "Despliegue en GitHub Pages",
+    installationTitle: "Instalación",
+    configurationTitle: "Configuración",
+    implementationTitle: "Implementación"
+  },
+  en: {
+    pythonIntegration: "Python Integration",
+    reactIntegration: "React Integration",
+    vueIntegration: "Vue Integration", 
+    angularIntegration: "Angular Integration",
+    save: "Save",
+    export: "Export",
+    savedSuccess: "Document saved successfully!",
+    netlifyDeployment: "Netlify Deployment Guide",
+    customDomain: "Custom Domain Setup", 
+    vercelDeployment: "Vercel Deployment",
+    githubPages: "GitHub Pages Deployment",
+    installationTitle: "Installation",
+    configurationTitle: "Configuration",
+    implementationTitle: "Implementation"
+  }
+};
+
+// Current language
+let currentLang = 'es';
+
+// Initialize editor after DOM is fully loaded
+document.addEventListener('DOMContentLoaded', () => {
+  const quill = new Quill('#editor', {
+    theme: 'snow',
+    modules: {
+      toolbar: [
+        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+        [{ 'font': [] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'color': [] }, { 'background': [] }],
+        [{ 'script': 'super' }, { 'script': 'sub' }],
+        [{ 'header': '1' }, { 'header': '2' }, 'blockquote', 'code-block'],
+        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+        [{ 'direction': 'rtl' }, { 'align': [] }],
+        ['link', 'image', 'video', 'formula'],
+        ['clean']
+      ]
+    }
+  });
+
+  // Load saved content if any
+  const savedContent = localStorage.getItem('document');
+  if (savedContent) {
+    quill.setContents(JSON.parse(savedContent));
+  }
+
+  // Make quill instance available globally
+  window.quill = quill;
+  
+  // Initialize Bootstrap accordions
+  const accordionItems = document.querySelectorAll('.accordion-collapse');
+  accordionItems.forEach(item => {
+    new bootstrap.Collapse(item, {
+      toggle: false
+    });
+  });
+  
+  // Add line numbers and command line plugin to code blocks
+  document.querySelectorAll('pre').forEach(block => {
+    // Add line numbers to all code blocks
+    block.classList.add('line-numbers');
+    
+    // Add command-line class to console/shell commands
+    if (block.textContent.includes('$') || 
+        block.textContent.includes('#') ||
+        block.textContent.includes('pip install') ||
+        block.textContent.includes('npm install')) {
+      block.classList.add('command-line');
+    }
+  });
+
+  // Enhance syntax highlighting
+  Prism.highlightAll();
+  
+  const codeBlocks = document.querySelectorAll('code[class*="language-"]');
+  codeBlocks.forEach(block => {
+    block.classList.add('line-numbers');
+    block.classList.add('inline-color'); // Add inline-color class for color highlighting
+  });
+
+  // Add language selector handler
+  document.getElementById('languageSelector').addEventListener('change', (e) => {
+    currentLang = e.target.value;
+    updateLanguage();
+  });
+
+  // Initial language update
+  updateLanguage();
+
+  // Initialize footer accordions same as navbar
+  const footerAccordions = document.querySelectorAll('.footer .accordion-collapse');
+  footerAccordions.forEach(item => {
+    new bootstrap.Collapse(item, {
+      toggle: false
+    });
+  });
+});
+
+// Function to update page language
+function updateLanguage() {
+  document.querySelectorAll('[data-lang-key]').forEach(element => {
+    const key = element.getAttribute('data-lang-key');
+    if (translations[currentLang][key]) {
+      element.textContent = translations[currentLang][key];
+    }
+  });
+  
+  // Update modal translations when language changes
+  document.querySelectorAll('.accordion-button').forEach(button => {
+    const key = button.getAttribute('data-lang-key');
+    if (key === "installationTitle") {
+      button.textContent = translations[currentLang][key];
+    } else if (key === "configurationTitle") {
+      button.textContent = translations[currentLang][key];
+    } else if (key === "implementationTitle") {
+      button.textContent = translations[currentLang][key];
+    } else if (key === "netlifyDeployment") {
+      button.textContent = translations[currentLang][key];
+    } else if (key === "customDomain") {
+      button.textContent = translations[currentLang][key];
+    } else if (key === "vercelDeployment") {
+      button.textContent = translations[currentLang][key];
+    } else if (key === "githubPages") {
+      button.textContent = translations[currentLang][key];
+    }
+  });
+}
+
+function saveDocument() {
+  const content = window.quill.getContents();
+  localStorage.setItem('document', JSON.stringify(content));
+  alert(translations[currentLang].savedSuccess);
+}
+
+function exportDocument() {
+  const content = window.quill.root.innerHTML;
+  const blob = new Blob([content], { type: 'text/html' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'document.html';
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
+</script>
+
+</body></html>
